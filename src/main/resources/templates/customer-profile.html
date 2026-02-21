@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Customer Profile</title>
+</head>
+<body>
+
+<h1>Customer Profile</h1>
+
+<p><b>ID:</b> <span th:text="${customer.id}"></span></p>
+<p><b>Account Number:</b> <span th:text="${customer.accountNumber}"></span></p>
+<p><b>Name:</b> <span th:text="${customer.fullName}"></span></p>
+<p><b>Email:</b> <span th:text="${customer.email}"></span></p>
+
+<p><a href="/customers">← Back to Customer List</a></p>
+<p>
+  <a th:href="@{/customers/{id}/todos(id=${customer.id})}">View To-Dos →</a>
+</p>
+</body>
+</html>

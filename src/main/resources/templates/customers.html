@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Customer List</title>
+</head>
+<body>
+
+<h1>Customer List</h1>
+<form method="get" action="/customers">
+    <input type="text" name="query"
+           placeholder="Search by first name"
+           th:value="${query}">
+    <button type="submit">Search</button>
+</form>
+
+<br>
+<p>
+  <a href="/customers/new">+ Add Customer</a>
+</p>
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Account</th>
+        <th>Name</th>
+        <th>Email</th>
+    </tr>
+
+    <tr th:each="customer : ${customers}">
+        <td th:text="${customer.id}"></td>
+        <td th:text="${customer.accountNumber}"></td>
+        <td>
+  <a th:href="@{/customers/{id}(id=${customer.id})}"
+     th:text="${customer.fullName}"></a>
+</td>
+
+        <td th:text="${customer.email}"></td>
+    </tr>
+
+</table>
+
+</body>
+</html>

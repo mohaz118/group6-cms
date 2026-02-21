@@ -1,0 +1,38 @@
+<table border="1" cellpadding="6" cellspacing="0">
+  <tr>
+    <th>ID</th>
+    <th>Title</th>
+    <th>Status</th>
+    <th>Toggle</th>
+    <th>Delete</th>
+  </tr>
+
+  <tr th:each="t : ${todos}">
+    <td th:text="${t.id}"></td>
+
+    <td th:text="${t.title}"></td>
+
+    <!-- Clean status display -->
+    <td th:text="${t.done} ? '✔ Done' : '✘ Pending'"></td>
+
+    <!-- Toggle Done / Undo -->
+    <td>
+      <form th:action="@{/customers/{cid}/todos/{tid}/toggle(cid=${customer.id}, tid=${t.id})}"
+            method="post">
+        <button type="submit"
+                th:text="${t.done} ? 'Undo' : 'Done'">
+        </button>
+      </form>
+    </td>
+
+    <!-- Delete with confirmation -->
+    <td>
+      <form th:action="@{/customers/{cid}/todos/{tid}/delete(cid=${customer.id}, tid=${t.id})}"
+            method="post"
+            onsubmit="return confirm('Are you sure you want to delete this to-do?');">
+        <button type="submit">Delete</button>
+      </form>
+    </td>
+
+  </tr>
+</table>

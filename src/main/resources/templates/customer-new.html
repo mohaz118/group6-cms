@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Add Customer</title>
+</head>
+<body>
+
+<h1>Add New Customer</h1>
+
+<!-- Show error if redirected with ?error=... -->
+<p th:if="${param.error}" style="color:red;" th:text="${param.error}"></p>
+
+<form action="/customers/new" method="post">
+
+  <p>
+    <label>Account Number:</label><br>
+    <input type="text" name="accountNumber" placeholder="ACC1004" required>
+  </p>
+
+  <p>
+    <label>First Name:</label><br>
+    <input type="text" name="firstName" placeholder="Jane" required>
+  </p>
+
+  <p>
+    <label>Last Name:</label><br>
+    <input type="text" name="lastName" placeholder="Doe" required>
+  </p>
+
+  <p>
+    <label>Email:</label><br>
+    <input type="email" name="email" placeholder="jane.doe@gmail.com" required>
+  </p>
+
+  <button type="submit">Create Customer</button>
+</form>
+
+<p>
+  <a href="/customers">← Back to Customer List</a>
+</p>
+
+</body>
+</html>
