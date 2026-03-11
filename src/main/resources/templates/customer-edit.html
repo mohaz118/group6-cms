@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Edit Customer</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <aside class="sidebar">
+        <div class="brand">
+            Broker Client Management System
+            <div class="brand-subtext">Insurance brokerage dashboard</div>
+        </div>
+
+        <div class="sidebar-section-title">Navigation</div>
+        <a th:href="@{/}" class="nav-link">Dashboard</a>
+        <a th:href="@{/customers}" class="nav-link active">Customers</a>
+    </aside>
+
+    <div class="main-area">
+
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Edit Customer</div>
+                <div class="topbar-subtitle">
+                    Update customer information and assignment details
+                </div>
+            </div>
+        </div>
+
+        <main class="page-content">
+
+            <div class="card">
+
+                <div class="page-header">
+                    <div>
+                        <h2>Edit Profile</h2>
+                        <p>Make changes to the customer account information below.</p>
+                    </div>
+                </div>
+
+                <form th:action="@{/customers/{id}/edit(id=${customer.id})}" method="post">
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label>Account Number</label>
+                            <input class="form-input"
+                                   type="text"
+                                   name="accountNumber"
+                                   th:value="${customer.accountNumber}"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input class="form-input"
+                                   type="email"
+                                   name="email"
+                                   th:value="${customer.email}"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input class="form-input"
+                                   type="text"
+                                   name="firstName"
+                                   th:value="${customer.firstName}"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input class="form-input"
+                                   type="text"
+                                   name="lastName"
+                                   th:value="${customer.lastName}"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Assigned Agent</label>
+                            <input class="form-input"
+                                   type="text"
+                                   name="assignedAgent"
+                                   th:value="${customer.assignedAgent}"
+                                   placeholder="Enter broker or agent name">
+                        </div>
+
+                    </div>
+
+                    <div class="action-row">
+                        <button type="submit" class="btn">Save Changes</button>
+
+                        <a th:href="@{/customers/{id}(id=${customer.id})}" class="btn btn-secondary">
+                            Back to Profile
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>

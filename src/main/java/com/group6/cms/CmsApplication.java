@@ -16,21 +16,24 @@ public class CmsApplication {
                                                                TodoRepository todoRepo) {
         return args -> {
 
-            // Create Customers
-            Customer c1 = customerRepo.save(
-                    new Customer("ACC1001", "John", "Smith", "john.smith@gmail.com"));
+            // only add sample data the first time when database is empty
+            if (customerRepo.count() == 0) {
 
-            Customer c2 = customerRepo.save(
-                    new Customer("ACC1002", "Mary", "Johnson", "mary.johnson@gmail.com"));
+                Customer c1 = customerRepo.save(
+                        new Customer("ACC1001", "John", "Smith", "john.smith@gmail.com"));
 
-            Customer c3 = customerRepo.save(
-                    new Customer("ACC1003", "Ahmed", "Ali", "ahmed.ali@gmail.com"));
+                Customer c2 = customerRepo.save(
+                        new Customer("ACC1002", "Mary", "Johnson", "mary.johnson@gmail.com"));
 
-            // Create Todos for Customers
-            todoRepo.save(new Todo(c1, "Call customer about renewal"));
-            todoRepo.save(new Todo(c1, "Upload ID verification"));
-            todoRepo.save(new Todo(c2, "Send updated quote"));
-            todoRepo.save(new Todo(c3, "Schedule follow-up meeting"));
+                Customer c3 = customerRepo.save(
+                        new Customer("ACC1003", "Ahmed", "Ali", "ahmed.ali@gmail.com"));
+
+                // Create Todos for Customers
+                todoRepo.save(new Todo(c1, "Call customer about renewal"));
+                todoRepo.save(new Todo(c1, "Upload ID verification"));
+                todoRepo.save(new Todo(c2, "Send updated quote"));
+                todoRepo.save(new Todo(c3, "Schedule follow-up meeting"));
+            }
         };
     }
 }

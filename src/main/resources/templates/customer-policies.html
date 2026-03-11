@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Customer Policies</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<div class="app-shell">
+
+<aside class="sidebar">
+
+<div class="brand">
+Broker Client Management System
+<div class="brand-subtext">Insurance brokerage dashboard</div>
+</div>
+
+<div class="sidebar-section-title">Navigation</div>
+
+<a th:href="@{/}" class="nav-link">Dashboard</a>
+<a th:href="@{/customers}" class="nav-link active">Customers</a>
+
+</aside>
+
+<div class="main-area">
+
+<div class="topbar">
+<div>
+<div class="topbar-title">Customer Policies</div>
+<div class="topbar-subtitle">
+Manage policies for this customer account
+</div>
+</div>
+</div>
+
+<main class="page-content">
+
+<div class="card">
+
+<div class="page-header">
+
+<div>
+<h2 th:text="${customer.fullName}">Customer Name</h2>
+<p>Add and review active or expired policies for this customer.</p>
+</div>
+
+<a th:href="@{/customers/{id}(id=${customer.id})}" class="btn btn-secondary">
+Back to Profile
+</a>
+
+</div>
+
+<p th:if="${error}" class="alert-error" th:text="${error}"></p>
+
+<form method="post" th:action="@{/customers/{id}/policies(id=${customer.id})}">
+
+<div class="form-grid">
+
+<div class="form-group">
+<label>Policy Type</label>
+<input class="form-input" type="text" name="type" required>
+</div>
+
+<div class="form-group">
+<label>Start Date</label>
+<input class="form-input" type="date" name="startDate" required>
+</div>
+
+<div class="form-group">
+<label>Expiry Date</label>
+<input class="form-input" type="date" name="expiryDate" required>
+</div>
+
+</div>
+
+<br>
+
+<button type="submit" class="btn">Add Policy</button>
+
+</form>
+
+</div>
+
+<div class="card">
+
+<h2>Current Policies</h2>
+
+<p th:if="${#lists.isEmpty(policies)}">No policies found for this customer.</p>
+
+<div class="table-card" th:if="${!#lists.isEmpty(policies)}">
+
+<table>
+
+<tr>
+<th>ID</th>
+<th>Type</th>
+<th>Start Date</th>
+<th>Expiry Date</th>
+<th>Status</th>
+</tr>
+
+<tr th:each="p : ${policies}">
+
+<td th:text="${p.id}"></td>
+<td th:text="${p.type}"></td>
+<td th:text="${p.startDate}"></td>
+<td th:text="${p.expiryDate}"></td>
+
+<td>
+
+<span th:if="${p.expiryDate.isBefore(T(java.time.LocalDate).now())}"
+class="badge badge-danger">
+Expired
+</span>
+
+<span th:if="${!p.expiryDate.isBefore(T(java.time.LocalDate).now())}"
+class="badge badge-success">
+Active
+</span>
+
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+</main>
+
+</div>
+
+</div>
+
+</body>
+</html>
