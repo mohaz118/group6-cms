@@ -17,6 +17,12 @@ public class HomeController {
         this.todoRepo = todoRepo;
     }
 
+    // Redirect root to login
+    @GetMapping("/")
+    public String home() {
+        return "redirect:/login";
+    }
+
     // ===============================
     // Customer List + Search
     // ===============================
@@ -49,17 +55,20 @@ public class HomeController {
     // Create Customer (Submit)
     // ===============================
     @PostMapping("/customers/new")
-    public String createCustomer(@RequestParam String accountNumber,
-                                 @RequestParam String firstName,
+    public String createCustomer(@RequestParam String firstName,
                                  @RequestParam String lastName,
                                  @RequestParam String email) {
 
-        // Simple validation (slightly polished)
-        if (accountNumber.isBlank() || firstName.isBlank() || lastName.isBlank() || email.isBlank()) {
+        if (firstName.isBlank() || lastName.isBlank() || email.isBlank()) {
             return "redirect:/customers/new?error=Please%20fill%20all%20fields";
         }
 
+        // generate account number
+        long count = customerRepo.count() + 1;
+        String accountNumber = "ACC" + (1000 + count);
+
         customerRepo.save(new Customer(accountNumber, firstName, lastName, email));
+
         return "redirect:/customers";
     }
 
@@ -68,10 +77,12 @@ public class HomeController {
     // ===============================
     @GetMapping("/customers/{id}")
     public String customerProfile(@PathVariable Long id, Model model) {
+
         Customer customer = customerRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid customer id: " + id));
 
         model.addAttribute("customer", customer);
+
         return "customer-profile";
     }
 
@@ -80,6 +91,7 @@ public class HomeController {
     // ===============================
     @GetMapping("/customers/{id}/todos")
     public String customerTodos(@PathVariable Long id, Model model) {
+
         Customer customer = customerRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid customer id: " + id));
 
@@ -87,18 +99,22 @@ public class HomeController {
 
         model.addAttribute("customer", customer);
         model.addAttribute("todos", todos);
+
         return "customer-todos";
     }
 
     // ===============================
-    // Add a Todo
+    // Add Todo
     // ===============================
     @PostMapping("/customers/{id}/todos")
-    public String addTodo(@PathVariable Long id, @RequestParam String title) {
+    public String addTodo(@PathVariable Long id,
+                          @RequestParam String title) {
+
         Customer customer = customerRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid customer id: " + id));
 
         todoRepo.save(new Todo(customer, title));
+
         return "redirect:/customers/" + id + "/todos";
     }
 
@@ -126,6 +142,7 @@ public class HomeController {
                              @PathVariable Long todoId) {
 
         todoRepo.deleteById(todoId);
+
         return "redirect:/customers/" + customerId + "/todos";
     }
 }
