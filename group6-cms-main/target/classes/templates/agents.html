@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Agents</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <aside class="sidebar">
+        <div class="brand">
+            Broker Client Management System
+            <div class="brand-subtext">Insurance brokerage dashboard</div>
+        </div>
+
+        <div class="sidebar-section-title">Navigation</div>
+        <a th:href="@{/}" class="nav-link">Dashboard</a>
+        <a th:href="@{/customers}" class="nav-link">Customers</a>
+        <a th:href="@{/agents}" class="nav-link active">Agents</a>
+    </aside>
+
+    <div class="main-area">
+
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Agents</div>
+                <div class="topbar-subtitle">
+                    View all account holders that can be assigned to customer profiles
+                </div>
+            </div>
+        </div>
+
+        <main class="page-content">
+
+            <div class="card">
+
+                <div class="page-header">
+                    <div>
+                        <h2>Agent Directory</h2>
+                        <p>Each CMS account appears here and can be selected during customer assignment.</p>
+                    </div>
+
+                    <a th:href="@{/agents/new}" class="btn">Create Agent Account</a>
+                </div>
+
+                <div class="table-card" th:if="${!#lists.isEmpty(agents)}">
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                        </tr>
+
+                        <tr th:each="agent : ${agents}">
+                            <td th:text="${agent.id}"></td>
+                            <td th:text="${agent.fullName}"></td>
+                            <td th:text="${'@' + agent.username}"></td>
+                            <td th:text="${agent.email}"></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <p th:if="${#lists.isEmpty(agents)}" class="empty-message">
+                    No agent accounts have been created yet.
+                </p>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>

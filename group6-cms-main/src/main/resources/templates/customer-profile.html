@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Customer Profile</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <aside class="sidebar">
+        <div class="brand">
+            Broker Client Management System
+            <div class="brand-subtext">Insurance brokerage dashboard</div>
+        </div>
+
+        <div class="sidebar-section-title">Navigation</div>
+        <a th:href="@{/}" class="nav-link">Dashboard</a>
+        <a th:href="@{/customers}" class="nav-link active">Customers</a>
+        <a th:href="@{/agents}" class="nav-link">Agents</a>
+    </aside>
+
+    <div class="main-area">
+
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Customer Profile</div>
+                <div class="topbar-subtitle">
+                    View customer details, assignments, and actions
+                </div>
+            </div>
+        </div>
+
+        <main class="page-content">
+
+            <div class="card">
+
+                <div class="page-header">
+                    <div>
+                        <h2 th:text="${customer.fullName}">Customer Name</h2>
+                        <p>Customer account overview and account management tools.</p>
+                    </div>
+
+                    <div class="action-row">
+                        <a th:href="@{/customers/{id}/edit(id=${customer.id})}" class="btn">
+                            Edit Profile
+                        </a>
+
+                        <a th:href="@{/customers/{id}/policies(id=${customer.id})}" class="btn btn-secondary">
+                            View Policies
+                        </a>
+
+                        <a th:href="@{/customers/{id}/todos(id=${customer.id})}" class="btn btn-secondary">
+                            View To-Dos
+                        </a>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+
+                    <div class="info-box">
+                        <div class="info-label">Customer ID</div>
+                        <div class="info-value" th:text="${customer.id}"></div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-label">Account Number</div>
+                        <div class="info-value" th:text="${customer.accountNumber}"></div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value" th:text="${customer.fullName}"></div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-label">Email</div>
+                        <div class="info-value" th:text="${customer.email}"></div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-label">Assigned Agent</div>
+                        <div class="info-value">
+                            <span th:if="${customer.assignedAgent != null}"
+                                  class="badge badge-success"
+                                  th:text="${customer.assignedAgentDisplayName}"></span>
+
+                            <span th:if="${customer.assignedAgent == null}"
+                                  class="badge badge-neutral">
+                                Not assigned yet
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="action-row" style="margin-top: 24px;">
+                    <a th:href="@{/customers}" class="btn btn-secondary">
+                        Back to Customer List
+                    </a>
+
+                    <form th:action="@{/customers/{id}/delete(id=${customer.id})}"
+                          method="post"
+                          onsubmit="return confirm('Are you sure you want to delete this customer?');"
+                          style="margin: 0;">
+                        <button type="submit" class="btn btn-danger">
+                            Delete Customer
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>

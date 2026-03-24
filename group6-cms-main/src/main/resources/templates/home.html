@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            Broker Client Management System
+            <div class="brand-subtext">Insurance brokerage dashboard</div>
+        </div>
+
+        <div class="sidebar-section-title">Navigation</div>
+
+        <a th:href="@{/}" class="nav-link active">Dashboard</a>
+        <a th:href="@{/customers}" class="nav-link">Customers</a>
+        <a th:href="@{/agents}" class="nav-link">Agents</a>
+
+    </aside>
+
+    <!-- Main content -->
+    <div class="main-area">
+
+        <div class="topbar" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div class="topbar-title">Dashboard</div>
+                <div class="topbar-subtitle">
+                    Overview of your brokerage system
+                </div>
+            </div>
+
+            <a th:href="@{/logout}" class="btn btn-danger">Logout</a>
+        </div>
+
+        <main class="page-content">
+
+            <!-- Statistics cards -->
+            <div class="info-grid">
+
+                <div class="card">
+                    <div class="info-label">Total Customers</div>
+                    <div class="info-value" th:text="${customerCount}">0</div>
+                </div>
+
+                <div class="card">
+                    <div class="info-label">Total Policies</div>
+                    <div class="info-value" th:text="${policyCount}">0</div>
+                </div>
+
+                <div class="card">
+                    <div class="info-label">Open To-Dos</div>
+                    <div class="info-value" th:text="${todoCount}">0</div>
+                </div>
+
+                <div class="card">
+                    <div class="info-label">Agent Accounts</div>
+                    <div class="info-value" th:text="${agentCount}">0</div>
+                </div>
+
+            </div>
+
+            <!-- Quick links -->
+            <div class="card">
+
+                <div class="page-header">
+                    <h2>Quick Actions</h2>
+                </div>
+
+                <div class="action-row">
+
+                    <a th:href="@{/customers/new}" class="btn">
+                        Add Customer
+                    </a>
+
+                    <a th:href="@{/customers}" class="btn btn-secondary">
+                        View Customers
+                    </a>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>
