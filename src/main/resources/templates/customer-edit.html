@@ -19,6 +19,7 @@
         <div class="sidebar-section-title">Navigation</div>
         <a th:href="@{/}" class="nav-link">Dashboard</a>
         <a th:href="@{/customers}" class="nav-link active">Customers</a>
+        <a th:href="@{/agents}" class="nav-link">Agents</a>
     </aside>
 
     <div class="main-area">
@@ -27,7 +28,7 @@
             <div>
                 <div class="topbar-title">Edit Customer</div>
                 <div class="topbar-subtitle">
-                    Update customer information and assignment details
+                    Update customer information and account details
                 </div>
             </div>
         </div>
@@ -38,9 +39,13 @@
 
                 <div class="page-header">
                     <div>
-                        <h2>Edit Profile</h2>
-                        <p>Make changes to the customer account information below.</p>
+                        <h2>Edit Customer Profile</h2>
+                        <p>Update the customer record and save the latest account information.</p>
                     </div>
+                </div>
+
+                <div th:if="${param.error}" class="error">
+                    <p th:text="${param.error}"></p>
                 </div>
 
                 <form th:action="@{/customers/{id}/edit(id=${customer.id})}" method="post">
@@ -84,12 +89,53 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Assigned Agent</label>
+                            <label>Phone</label>
                             <input class="form-input"
                                    type="text"
-                                   name="assignedAgent"
-                                   th:value="${customer.assignedAgent}"
-                                   placeholder="Enter broker or agent name">
+                                   name="phone"
+                                   th:value="${customer.phone}"
+                                   placeholder="519-555-1234"
+                                   pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Mailing Address</label>
+                            <input class="form-input"
+                                   type="text"
+                                   id="mailingAddress"
+                                   name="address"
+                                   th:value="${customer.address}"
+                                   placeholder="123 King St W, Waterloo, ON">
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label style="display:flex; align-items:center; gap:10px; font-weight:600;">
+                                <input type="checkbox" id="sameAsMailing" style="width:auto;">
+                                Billing address is the same as mailing address
+                            </label>
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Billing Address</label>
+                            <input class="form-input"
+                                   type="text"
+                                   id="billingAddress"
+                                   name="billingAddress"
+                                   th:value="${customer.billingAddress}"
+                                   placeholder="Enter billing address">
+                            <small>If checked above, this will auto-fill from the mailing address.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Assigned Agent</label>
+                            <select class="form-input" name="assignedAgentId">
+                                <option value="">Not assigned</option>
+                                <option th:each="agent : ${agents}"
+                                        th:value="${agent.id}"
+                                        th:text="${agent.fullName + (agent.title != null and !agent.title.isEmpty() ? ' - ' + agent.title : '')}"
+                                        th:selected="${customer.assignedAgent != null and customer.assignedAgent.id == agent.id}">
+                                </option>
+                            </select>
                         </div>
 
                     </div>
@@ -111,6 +157,43 @@
     </div>
 
 </div>
+
+<script>
+    const mailingAddressInput = document.getElementById("mailingAddress");
+    const billingAddressInput = document.getElementById("billingAddress");
+    const sameAsMailingCheckbox = document.getElementById("sameAsMailing");
+
+    function syncBillingAddress() {
+        if (sameAsMailingCheckbox.checked) {
+            billingAddressInput.value = mailingAddressInput.value;
+            billingAddressInput.setAttribute("readonly", "readonly");
+            billingAddressInput.style.backgroundColor = "#f8fafc";
+        } else {
+            billingAddressInput.removeAttribute("readonly");
+            billingAddressInput.style.backgroundColor = "white";
+        }
+    }
+
+    function initializeSameAsMailing() {
+        const mailing = (mailingAddressInput.value || "").trim();
+        const billing = (billingAddressInput.value || "").trim();
+
+        if (mailing !== "" && billing !== "" && mailing === billing) {
+            sameAsMailingCheckbox.checked = true;
+            syncBillingAddress();
+        }
+    }
+
+    sameAsMailingCheckbox.addEventListener("change", syncBillingAddress);
+
+    mailingAddressInput.addEventListener("input", function () {
+        if (sameAsMailingCheckbox.checked) {
+            billingAddressInput.value = mailingAddressInput.value;
+        }
+    });
+
+    initializeSameAsMailing();
+</script>
 
 </body>
 </html>

@@ -1,43 +1,157 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <title>Add Customer</title>
+    <title>Add Customer</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+
 <body>
 
-<h1>Add New Customer</h1>
+<div class="app-shell">
 
-<!-- Show error if redirected with ?error=... -->
-<p th:if="${param.error}" style="color:red;" th:text="${param.error}"></p>
+    <aside class="sidebar">
+        <div class="brand">
+            Broker Client Management System
+            <div class="brand-subtext">Insurance brokerage dashboard</div>
+        </div>
 
-<form action="/customers/new" method="post">
+        <div class="sidebar-section-title">Navigation</div>
 
-  <p>
-    <label>Account Number:</label><br>
-    <input type="text" name="accountNumber" placeholder="ACC1004" required>
-  </p>
+        <a th:href="@{/}" class="nav-link">Dashboard</a>
+        <a th:href="@{/customers}" class="nav-link active">Customers</a>
+        <a th:href="@{/agents}" class="nav-link">Agents</a>
+    </aside>
 
-  <p>
-    <label>First Name:</label><br>
-    <input type="text" name="firstName" placeholder="Jane" required>
-  </p>
+    <div class="main-area">
 
-  <p>
-    <label>Last Name:</label><br>
-    <input type="text" name="lastName" placeholder="Doe" required>
-  </p>
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Add Customer</div>
+                <div class="topbar-subtitle">
+                    Create a new client account in the system
+                </div>
+            </div>
+        </div>
 
-  <p>
-    <label>Email:</label><br>
-    <input type="email" name="email" placeholder="jane.doe@gmail.com" required>
-  </p>
+        <main class="page-content">
 
-  <button type="submit">Create Customer</button>
-</form>
+            <div class="card">
 
-<p>
-  <a href="/customers">← Back to Customer List</a>
-</p>
+                <div class="page-header">
+                    <div>
+                        <h2>Add New Customer</h2>
+                        <p>Create a customer record with contact and billing details.</p>
+                    </div>
+                </div>
+
+                <div th:if="${param.error}" class="error">
+                    <p th:text="${param.error}"></p>
+                </div>
+
+                <form action="/customers/new" method="post">
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label>Account Number</label>
+                            <input type="text" name="accountNumber" class="form-input" placeholder="ACC1004" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" class="form-input" placeholder="jane.doe@gmail.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" name="firstName" class="form-input" placeholder="Jane" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" name="lastName" class="form-input" placeholder="Doe" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text"
+                                   name="phone"
+                                   class="form-input"
+                                   placeholder="519-555-1234"
+                                   pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Mailing Address</label>
+                            <input type="text"
+                                   id="mailingAddress"
+                                   name="address"
+                                   class="form-input"
+                                   placeholder="123 King St W, Waterloo, ON">
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label style="display:flex; align-items:center; gap:10px; font-weight:600;">
+                                <input type="checkbox" id="sameAsMailing" style="width:auto;">
+                                Billing address is the same as mailing address
+                            </label>
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Billing Address</label>
+                            <input type="text"
+                                   id="billingAddress"
+                                   name="billingAddress"
+                                   class="form-input"
+                                   placeholder="Enter billing address">
+                            <small>If checked above, this will auto-fill from the mailing address.</small>
+                        </div>
+
+                    </div>
+
+                    <div style="margin-top:20px;" class="action-row">
+                        <button type="submit" class="btn">Create Customer</button>
+
+                        <a th:href="@{/customers}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+<script>
+    const mailingAddressInput = document.getElementById("mailingAddress");
+    const billingAddressInput = document.getElementById("billingAddress");
+    const sameAsMailingCheckbox = document.getElementById("sameAsMailing");
+
+    function syncBillingAddress() {
+        if (sameAsMailingCheckbox.checked) {
+            billingAddressInput.value = mailingAddressInput.value;
+            billingAddressInput.setAttribute("readonly", "readonly");
+            billingAddressInput.style.backgroundColor = "#f8fafc";
+        } else {
+            billingAddressInput.removeAttribute("readonly");
+            billingAddressInput.style.backgroundColor = "white";
+        }
+    }
+
+    sameAsMailingCheckbox.addEventListener("change", syncBillingAddress);
+
+    mailingAddressInput.addEventListener("input", function () {
+        if (sameAsMailingCheckbox.checked) {
+            billingAddressInput.value = mailingAddressInput.value;
+        }
+    });
+</script>
 
 </body>
 </html>

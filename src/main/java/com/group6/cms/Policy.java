@@ -10,27 +10,50 @@ public class Policy {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
+
     private String type;
+    private String billingType;
+    private double amountOwed;
+    private String coverageInfo;
     private LocalDate startDate;
     private LocalDate expiryDate;
-    private boolean active = true;
-
-    @ManyToOne
-    private Customer customer;
+    private boolean active;
+    private boolean paid;
 
     public Policy() {
     }
 
-    public Policy(Customer customer, String type, LocalDate startDate, LocalDate expiryDate) {
+    public Policy(Customer customer,
+                  String type,
+                  String billingType,
+                  double amountOwed,
+                  String coverageInfo,
+                  LocalDate startDate,
+                  LocalDate expiryDate) {
         this.customer = customer;
         this.type = type;
+        this.billingType = billingType;
+        this.amountOwed = amountOwed;
+        this.coverageInfo = coverageInfo;
         this.startDate = startDate;
         this.expiryDate = expiryDate;
         this.active = true;
+        this.paid = false;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
     public String getType() {
@@ -39,6 +62,30 @@ public class Policy {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getBillingType() {
+        return billingType;
+    }
+
+    public void setBillingType(String billingType) {
+        this.billingType = billingType;
+    }
+
+    public double getAmountOwed() {
+        return amountOwed;
+    }
+
+    public void setAmountOwed(double amountOwed) {
+        this.amountOwed = amountOwed;
+    }
+
+    public String getCoverageInfo() {
+        return coverageInfo;
+    }
+
+    public void setCoverageInfo(String coverageInfo) {
+        this.coverageInfo = coverageInfo;
     }
 
     public LocalDate getStartDate() {
@@ -65,11 +112,11 @@ public class Policy {
         this.active = active;
     }
 
-    public Customer getCustomer() {
-        return customer;
+    public boolean isPaid() {
+        return paid;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
+    public void setPaid(boolean paid) {
+        this.paid = paid;
     }
 }

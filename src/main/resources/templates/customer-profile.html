@@ -19,6 +19,7 @@
         <div class="sidebar-section-title">Navigation</div>
         <a th:href="@{/}" class="nav-link">Dashboard</a>
         <a th:href="@{/customers}" class="nav-link active">Customers</a>
+        <a th:href="@{/agents}" class="nav-link">Agents</a>
     </aside>
 
     <div class="main-area">
@@ -80,13 +81,50 @@
                     </div>
 
                     <div class="info-box">
+                        <div class="info-label">Phone</div>
+                        <div class="info-value"
+                             th:text="${customer.phone != null and !customer.phone.isEmpty() ? customer.phone : 'Not provided'}">
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-label">Mailing Address</div>
+                        <div class="info-value"
+                             th:text="${customer.address != null and !customer.address.isEmpty() ? customer.address : 'Not provided'}">
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-label">Billing Address</div>
+                        <div class="info-value"
+                             th:text="${customer.billingAddress != null and !customer.billingAddress.isEmpty() ? customer.billingAddress : 'Not provided'}">
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-label">Total Amount Owed</div>
+                        <div class="info-value"
+                             th:text="'$' + ${#numbers.formatDecimal(totalAmountOwed, 1, 'COMMA', 2, 'POINT')}">
+                            $0.00
+                        </div>
+                    </div>
+
+                    <div class="info-box">
                         <div class="info-label">Assigned Agent</div>
                         <div class="info-value">
-                            <span th:if="${customer.assignedAgent != null and !customer.assignedAgent.isEmpty()}"
-                                  class="badge badge-success"
-                                  th:text="${customer.assignedAgent}"></span>
+                            <span th:if="${customer.assignedAgent != null}">
+                                <span class="badge badge-success"
+                                      th:text="${customer.assignedAgent.fullName}"></span>
+                                <div style="margin-top:8px; color:#6b7280;"
+                                     th:text="${customer.assignedAgent.email}">
+                                </div>
+                                <div style="color:#6b7280;"
+                                     th:if="${customer.assignedAgent.title != null and !customer.assignedAgent.title.isEmpty()}"
+                                     th:text="${customer.assignedAgent.title}">
+                                </div>
+                            </span>
 
-                            <span th:if="${customer.assignedAgent == null or customer.assignedAgent.isEmpty()}"
+                            <span th:if="${customer.assignedAgent == null}"
                                   class="badge badge-neutral">
                                 Not assigned yet
                             </span>

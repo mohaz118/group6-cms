@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Add Agent</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <aside class="sidebar">
+        <div class="brand">
+            Broker Client Management System
+            <div class="brand-subtext">Insurance brokerage dashboard</div>
+        </div>
+
+        <div class="sidebar-section-title">Navigation</div>
+        <a th:href="@{/}" class="nav-link">Dashboard</a>
+        <a th:href="@{/customers}" class="nav-link">Customers</a>
+        <a th:href="@{/agents}" class="nav-link active">Agents</a>
+    </aside>
+
+    <div class="main-area">
+
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Add Agent</div>
+                <div class="topbar-subtitle">
+                    Create a new agent profile for customer assignment
+                </div>
+            </div>
+        </div>
+
+        <main class="page-content">
+
+            <div class="card">
+
+                <div class="page-header">
+                    <h2>Add New Agent</h2>
+                </div>
+
+                <div th:if="${param.error}" class="error">
+                    <p th:text="${param.error}"></p>
+                </div>
+
+                <form action="/agents/new" method="post">
+
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" name="firstName" placeholder="Sarah" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" name="lastName" placeholder="Lee" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" placeholder="sarah.lee@brokerage.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Title</label>
+                        <select name="title" required>
+                            <option value="">Select title</option>
+                            <option value="Broker">Broker</option>
+                            <option value="Senior Broker">Senior Broker</option>
+                            <option value="Account Manager">Account Manager</option>
+                            <option value="Sales Representative">Sales Representative</option>
+                            <option value="Customer Service Representative">Customer Service Representative</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-top:20px;">
+                        <button type="submit" class="btn">
+                            Create Agent
+                        </button>
+
+                        <a th:href="@{/agents}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>

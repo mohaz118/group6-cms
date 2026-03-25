@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Agents</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <aside class="sidebar">
+        <div class="brand">
+            Broker Client Management System
+            <div class="brand-subtext">Insurance brokerage dashboard</div>
+        </div>
+
+        <div class="sidebar-section-title">Navigation</div>
+        <a th:href="@{/}" class="nav-link">Dashboard</a>
+        <a th:href="@{/customers}" class="nav-link">Customers</a>
+        <a th:href="@{/agents}" class="nav-link active">Agents</a>
+    </aside>
+
+    <div class="main-area">
+
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Agents</div>
+                <div class="topbar-subtitle">
+                    Manage brokerage staff and customer assignments
+                </div>
+            </div>
+        </div>
+
+        <main class="page-content">
+
+            <div class="card">
+
+                <div class="page-header">
+                    <div>
+                        <h2>Agent Directory</h2>
+                        <p>View and manage all agents available for customer assignment.</p>
+                    </div>
+
+                    <a th:href="@{/agents/new}" class="btn">
+                        Add Agent
+                    </a>
+                </div>
+
+                <form method="get" th:action="@{/agents}" class="search-bar">
+
+                    <input type="text"
+                           name="query"
+                           placeholder="Search by first name, last name, or email"
+                           th:value="${query}">
+
+                    <select name="title">
+                        <option value="">All job titles</option>
+                        <option value="Broker" th:selected="${selectedTitle == 'Broker'}">Broker</option>
+                        <option value="Senior Broker" th:selected="${selectedTitle == 'Senior Broker'}">Senior Broker</option>
+                        <option value="Account Manager" th:selected="${selectedTitle == 'Account Manager'}">Account Manager</option>
+                        <option value="Sales Representative" th:selected="${selectedTitle == 'Sales Representative'}">Sales Representative</option>
+                        <option value="Customer Service Representative" th:selected="${selectedTitle == 'Customer Service Representative'}">
+                            Customer Service Representative
+                        </option>
+                    </select>
+
+                    <button type="submit" class="btn">
+                        Search
+                    </button>
+
+                    <a th:href="@{/agents}" class="btn btn-secondary">
+                        Clear
+                    </a>
+
+                </form>
+
+                <div class="table-card">
+
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Job Title</th>
+                        </tr>
+
+                        <tr th:each="agent : ${agents}">
+                            <td th:text="${agent.id}"></td>
+                            <td th:text="${agent.fullName}"></td>
+                            <td th:text="${agent.email}"></td>
+                            <td>
+                                <span th:if="${agent.title != null and !agent.title.isEmpty()}"
+                                      th:text="${agent.title}"></span>
+                                <span th:if="${agent.title == null or agent.title.isEmpty()}"
+                                      class="badge badge-neutral">
+                                    Not specified
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+
+                <p th:if="${#lists.isEmpty(agents)}" class="empty-message">
+                    No agents found matching your search.
+                </p>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>

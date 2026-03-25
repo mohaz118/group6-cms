@@ -10,129 +10,232 @@
 
 <div class="app-shell">
 
-<aside class="sidebar">
+    <aside class="sidebar">
 
-<div class="brand">
-Broker Client Management System
-<div class="brand-subtext">Insurance brokerage dashboard</div>
-</div>
+        <div class="brand">
+            Broker Client Management System
+            <div class="brand-subtext">Insurance brokerage dashboard</div>
+        </div>
 
-<div class="sidebar-section-title">Navigation</div>
+        <div class="sidebar-section-title">Navigation</div>
 
-<a th:href="@{/}" class="nav-link">Dashboard</a>
-<a th:href="@{/customers}" class="nav-link active">Customers</a>
+        <a th:href="@{/}" class="nav-link">Dashboard</a>
+        <a th:href="@{/customers}" class="nav-link active">Customers</a>
+        <a th:href="@{/agents}" class="nav-link">Agents</a>
 
-</aside>
+    </aside>
 
-<div class="main-area">
+    <div class="main-area">
 
-<div class="topbar">
-<div>
-<div class="topbar-title">Customer Policies</div>
-<div class="topbar-subtitle">
-Manage policies for this customer account
-</div>
-</div>
-</div>
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Customer Policies</div>
+                <div class="topbar-subtitle">
+                    Manage policies for this customer account
+                </div>
+            </div>
+        </div>
 
-<main class="page-content">
+        <main class="page-content">
 
-<div class="card">
+            <div class="card">
 
-<div class="page-header">
+                <div class="page-header">
 
-<div>
-<h2 th:text="${customer.fullName}">Customer Name</h2>
-<p>Add and review active or expired policies for this customer.</p>
-</div>
+                    <div>
+                        <h2 th:text="${customer.fullName}">Customer Name</h2>
+                        <p>Add and review active or expired policies for this customer.</p>
+                    </div>
 
-<a th:href="@{/customers/{id}(id=${customer.id})}" class="btn btn-secondary">
-Back to Profile
-</a>
+                    <a th:href="@{/customers/{id}(id=${customer.id})}" class="btn btn-secondary">
+                        Back to Profile
+                    </a>
 
-</div>
+                </div>
 
-<p th:if="${error}" class="alert-error" th:text="${error}"></p>
+                <p th:if="${error}" class="alert-error" th:text="${error}"></p>
 
-<form method="post" th:action="@{/customers/{id}/policies(id=${customer.id})}">
+                <form method="post" th:action="@{/customers/{id}/policies(id=${customer.id})}">
 
-<div class="form-grid">
+                    <div class="form-grid">
 
-<div class="form-group">
-<label>Policy Type</label>
-<input class="form-input" type="text" name="type" required>
-</div>
+                        <div class="form-group">
+                            <label>Policy Type</label>
+                            <select class="form-input" name="type" required>
+                                <option value="">Select policy type</option>
+                                <option value="Auto">Auto</option>
+                                <option value="Home">Home</option>
+                                <option value="Tenant">Tenant</option>
+                                <option value="Condo">Condo</option>
+                                <option value="Life">Life</option>
+                                <option value="Commercial">Commercial</option>
+                            </select>
+                        </div>
 
-<div class="form-group">
-<label>Start Date</label>
-<input class="form-input" type="date" name="startDate" required>
-</div>
+                        <div class="form-group">
+                            <label>Billing Type</label>
+                            <select class="form-input" name="billingType" required>
+                                <option value="">Select billing type</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="Yearly">Yearly</option>
+                            </select>
+                        </div>
 
-<div class="form-group">
-<label>Expiry Date</label>
-<input class="form-input" type="date" name="expiryDate" required>
-</div>
+                        <div class="form-group">
+                            <label>Amount Owed</label>
+                            <input class="form-input"
+                                   type="number"
+                                   step="0.01"
+                                   min="0"
+                                   name="amountOwed"
+                                   placeholder="1200.00"
+                                   required>
+                        </div>
 
-</div>
+                        <div class="form-group">
+                            <label>Payment Status</label>
+                            <select class="form-input" name="paid" required>
+                                <option value="false">Unpaid</option>
+                                <option value="true">Paid</option>
+                            </select>
+                        </div>
 
-<br>
+                        <div class="form-group">
+                            <label>Start Date</label>
+                            <input class="form-input" type="date" name="startDate" required>
+                        </div>
 
-<button type="submit" class="btn">Add Policy</button>
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input class="form-input" type="date" name="expiryDate" required>
+                        </div>
 
-</form>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Coverage Info</label>
+                            <textarea class="form-input"
+                                      name="coverageInfo"
+                                      rows="3"
+                                      placeholder="Example: $1M liability, $1,000 deductible, collision included"></textarea>
+                        </div>
 
-</div>
+                    </div>
 
-<div class="card">
+                    <br>
 
-<h2>Current Policies</h2>
+                    <button type="submit" class="btn">Add Policy</button>
 
-<p th:if="${#lists.isEmpty(policies)}">No policies found for this customer.</p>
+                </form>
 
-<div class="table-card" th:if="${!#lists.isEmpty(policies)}">
+            </div>
 
-<table>
+            <div class="card" th:if="${!#lists.isEmpty(policies)}">
 
-<tr>
-<th>ID</th>
-<th>Type</th>
-<th>Start Date</th>
-<th>Expiry Date</th>
-<th>Status</th>
-</tr>
+                <div class="info-box">
+                    <div class="info-label">Total Amount Owed</div>
+                    <div class="info-value"
+                         th:text="'$' + ${#numbers.formatDecimal(totalAmountOwed, 1, 'COMMA', 2, 'POINT')}">
+                    </div>
+                    <small>Only unpaid policies are included in this total.</small>
+                </div>
 
-<tr th:each="p : ${policies}">
+            </div>
 
-<td th:text="${p.id}"></td>
-<td th:text="${p.type}"></td>
-<td th:text="${p.startDate}"></td>
-<td th:text="${p.expiryDate}"></td>
+            <div class="card">
 
-<td>
+                <h2>Current Policies</h2>
 
-<span th:if="${p.expiryDate.isBefore(T(java.time.LocalDate).now())}"
-class="badge badge-danger">
-Expired
-</span>
+                <p th:if="${#lists.isEmpty(policies)}" class="empty-message">
+                    No policies yet. Add a policy above to get started.
+                </p>
 
-<span th:if="${!p.expiryDate.isBefore(T(java.time.LocalDate).now())}"
-class="badge badge-success">
-Active
-</span>
+                <div class="table-card" th:if="${!#lists.isEmpty(policies)}">
 
-</td>
+                    <table>
 
-</tr>
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Billing</th>
+                            <th>Amount Owed</th>
+                            <th>Payment</th>
+                            <th>Coverage Info</th>
+                            <th>Start Date</th>
+                            <th>Expiry Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
 
-</table>
+                        <tr th:each="p : ${policies}">
 
-</div>
+                            <td th:text="${p.id}"></td>
+                            <td th:text="${p.type}"></td>
+                            <td th:text="${p.billingType}"></td>
 
-</div>
+                            <td th:text="'$' + ${#numbers.formatDecimal(p.amountOwed, 1, 'COMMA', 2, 'POINT')}"></td>
 
-</main>
+                            <td>
+                                <span th:if="${p.paid}" class="badge badge-success">
+                                    Paid
+                                </span>
 
-</div>
+                                <span th:if="${!p.paid}" class="badge badge-danger">
+                                    Unpaid
+                                </span>
+                            </td>
+
+                            <td>
+                                <span th:if="${p.coverageInfo != null and !p.coverageInfo.isEmpty()}"
+                                      th:text="${p.coverageInfo}"></span>
+
+                                <span th:if="${p.coverageInfo == null or p.coverageInfo.isEmpty()}"
+                                      style="color:#888;">
+                                    Not provided
+                                </span>
+                            </td>
+
+                            <td th:text="${p.startDate}"></td>
+                            <td th:text="${p.expiryDate}"></td>
+
+                            <td>
+                                <span th:if="${p.expiryDate.isBefore(T(java.time.LocalDate).now())}"
+                                      class="badge badge-danger">
+                                    Expired
+                                </span>
+
+                                <span th:if="${!p.expiryDate.isBefore(T(java.time.LocalDate).now()) 
+                                    and !p.expiryDate.isAfter(T(java.time.LocalDate).now().plusDays(30))}"
+                                      class="badge badge-warning">
+                                    Expiring Soon
+                                </span>
+
+                                <span th:if="${p.expiryDate.isAfter(T(java.time.LocalDate).now().plusDays(30))}"
+                                      class="badge badge-success">
+                                    Active
+                                </span>
+                            </td>
+
+                            <td>
+                                <form th:action="@{/customers/{customerId}/policies/{policyId}/toggle-payment(customerId=${customer.id}, policyId=${p.id})}"
+                                      method="post"
+                                      style="margin:0;">
+                                    <button type="submit"
+                                            class="btn btn-secondary"
+                                            th:text="${p.paid ? 'Mark Unpaid' : 'Mark Paid'}">
+                                    </button>
+                                </form>
+                            </td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
 
 </div>
 

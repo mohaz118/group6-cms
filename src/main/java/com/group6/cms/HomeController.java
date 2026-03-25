@@ -6,6 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 @Controller
@@ -14,58 +15,109 @@ public class HomeController {
     private final CustomerRepository customerRepo;
     private final TodoRepository todoRepo;
     private final PolicyRepository policyRepo;
+    private final AgentRepository agentRepo;
 
     public HomeController(CustomerRepository customerRepo,
                           TodoRepository todoRepo,
-                          PolicyRepository policyRepo) {
+                          PolicyRepository policyRepo,
+                          AgentRepository agentRepo) {
         this.customerRepo = customerRepo;
         this.todoRepo = todoRepo;
         this.policyRepo = policyRepo;
+        this.agentRepo = agentRepo;
     }
 
-    // helper method for checking whether user is logged in
-    private boolean notLoggedIn(HttpSession session) {
-        return session.getAttribute("loggedInUser") == null;
+    private boolean notFullyAuthenticated(HttpSession session) {
+        return session.getAttribute("loggedInUser") == null
+                || !Boolean.TRUE.equals(session.getAttribute("twoFactorVerified"));
     }
 
-    // Dashboard / landing page
     @GetMapping("/")
     public String dashboard(Model model, HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
         long customerCount = customerRepo.count();
         long policyCount = policyRepo.count();
-        long todoCount = todoRepo.count();
 
-        // count customers that actually have an assigned agent
+        List<Todo> allTodos = todoRepo.findAll();
+        long todoCount = allTodos.stream()
+                .filter(t -> !t.isDone())
+                .count();
+
         long agentCount = customerRepo.findAll().stream()
-                .filter(c -> c.getAssignedAgent() != null && !c.getAssignedAgent().trim().isEmpty())
+                .filter(c -> c.getAssignedAgent() != null)
+                .count();
+
+        List<Customer> recentCustomers = customerRepo.findAll().stream()
+                .sorted(Comparator.comparing(Customer::getId).reversed())
+                .limit(5)
+                .toList();
+
+        List<Todo> upcomingTodos = allTodos.stream()
+                .filter(t -> !t.isDone())
+                .sorted(Comparator.comparing(Todo::getId).reversed())
+                .limit(5)
+                .toList();
+
+        List<Policy> allPolicies = policyRepo.findAll();
+
+        double totalAmountOwed = allPolicies.stream()
+                .filter(p -> !p.isPaid())
+                .mapToDouble(Policy::getAmountOwed)
+                .sum();
+
+        long expiringSoonCount = allPolicies.stream()
+                .filter(p -> !p.getExpiryDate().isBefore(LocalDate.now()))
+                .filter(p -> !p.getExpiryDate().isAfter(LocalDate.now().plusDays(30)))
+                .count();
+
+        long activePolicyCount = allPolicies.stream()
+                .filter(p -> !p.getExpiryDate().isBefore(LocalDate.now()))
+                .count();
+
+        long expiredPolicyCount = allPolicies.stream()
+                .filter(p -> p.getExpiryDate().isBefore(LocalDate.now()))
                 .count();
 
         model.addAttribute("customerCount", customerCount);
         model.addAttribute("policyCount", policyCount);
         model.addAttribute("todoCount", todoCount);
         model.addAttribute("agentCount", agentCount);
+        model.addAttribute("recentCustomers", recentCustomers);
+        model.addAttribute("upcomingTodos", upcomingTodos);
+        model.addAttribute("totalAmountOwed", totalAmountOwed);
+        model.addAttribute("expiringSoonCount", expiringSoonCount);
+        model.addAttribute("activePolicyCount", activePolicyCount);
+        model.addAttribute("expiredPolicyCount", expiredPolicyCount);
 
         return "home";
     }
 
-    // Customer list page
-    // Also supports simple search by first name
     @GetMapping("/customers")
     public String customers(@RequestParam(required = false) String query,
                             Model model,
                             HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
         List<Customer> customers;
 
         if (query != null && !query.trim().isEmpty()) {
-            customers = customerRepo.findByFirstNameContainingIgnoreCase(query.trim());
+            String search = query.trim();
+
+            customers = customerRepo
+                    .findByAccountNumberContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                            search, search, search, search
+                    );
         } else {
             customers = customerRepo.findAll();
         }
@@ -75,10 +127,12 @@ public class HomeController {
         return "customers";
     }
 
-    // Open form to add a new customer
     @GetMapping("/customers/new")
     public String newCustomerForm(Model model, HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
@@ -86,19 +140,24 @@ public class HomeController {
         return "customer-new";
     }
 
-    // Save new customer
     @PostMapping("/customers/new")
     public String createCustomer(@RequestParam String accountNumber,
                                  @RequestParam String firstName,
                                  @RequestParam String lastName,
                                  @RequestParam String email,
+                                 @RequestParam(required = false) String phone,
+                                 @RequestParam(required = false) String address,
+                                 @RequestParam(required = false) String billingAddress,
                                  HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
         if (accountNumber.isBlank() || firstName.isBlank() || lastName.isBlank() || email.isBlank()) {
-            return "redirect:/customers/new?error=Please%20fill%20all%20fields";
+            return "redirect:/customers/new?error=Please%20fill%20all%20required%20fields";
         }
 
         Customer customer = new Customer(
@@ -108,56 +167,83 @@ public class HomeController {
                 email.trim()
         );
 
-        // default value for assign agent feature
-        customer.setAssignedAgent("");
+        customer.setPhone(phone == null ? "" : phone.trim());
+        customer.setAddress(address == null ? "" : address.trim());
+        customer.setBillingAddress(billingAddress == null ? "" : billingAddress.trim());
+        customer.setAssignedAgent(null);
 
         customerRepo.save(customer);
         return "redirect:/customers";
     }
 
-    // Show one customer's profile
     @GetMapping("/customers/{id}")
     public String customerProfile(@PathVariable Long id,
                                   Model model,
                                   HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
         Customer customer = customerRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid customer id: " + id));
 
+        List<Policy> policies = policyRepo.findByCustomerId(id);
+
+        double totalAmountOwed = policies.stream()
+                .filter(p -> !p.isPaid())
+                .mapToDouble(Policy::getAmountOwed)
+                .sum();
+
         model.addAttribute("customer", customer);
+        model.addAttribute("totalAmountOwed", totalAmountOwed);
+
         return "customer-profile";
     }
 
-    // Open edit page
     @GetMapping("/customers/{id}/edit")
     public String editCustomerForm(@PathVariable Long id,
                                    Model model,
                                    HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
         Customer customer = customerRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid customer id: " + id));
 
+        List<Agent> agents = agentRepo.findAll();
+
         model.addAttribute("customer", customer);
+        model.addAttribute("agents", agents);
         return "customer-edit";
     }
 
-    // Save edited customer info
     @PostMapping("/customers/{id}/edit")
     public String updateCustomer(@PathVariable Long id,
                                  @RequestParam String accountNumber,
                                  @RequestParam String firstName,
                                  @RequestParam String lastName,
                                  @RequestParam String email,
-                                 @RequestParam(required = false) String assignedAgent,
+                                 @RequestParam(required = false) String phone,
+                                 @RequestParam(required = false) String address,
+                                 @RequestParam(required = false) String billingAddress,
+                                 @RequestParam(required = false) Long assignedAgentId,
                                  HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
+        }
+
+        if (accountNumber.isBlank() || firstName.isBlank() || lastName.isBlank() || email.isBlank()) {
+            return "redirect:/customers/" + id + "/edit?error=Please%20fill%20all%20required%20fields";
         }
 
         Customer customer = customerRepo.findById(id)
@@ -167,17 +253,28 @@ public class HomeController {
         customer.setFirstName(firstName.trim());
         customer.setLastName(lastName.trim());
         customer.setEmail(email.trim());
-        customer.setAssignedAgent(assignedAgent == null ? "" : assignedAgent.trim());
+        customer.setPhone(phone == null ? "" : phone.trim());
+        customer.setAddress(address == null ? "" : address.trim());
+        customer.setBillingAddress(billingAddress == null ? "" : billingAddress.trim());
+
+        if (assignedAgentId != null) {
+            Agent agent = agentRepo.findById(assignedAgentId).orElse(null);
+            customer.setAssignedAgent(agent);
+        } else {
+            customer.setAssignedAgent(null);
+        }
 
         customerRepo.save(customer);
         return "redirect:/customers/" + id;
     }
 
-    // Delete customer and related todos first
     @PostMapping("/customers/{id}/delete")
     @org.springframework.transaction.annotation.Transactional
     public String deleteCustomer(@PathVariable Long id, HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
@@ -186,13 +283,15 @@ public class HomeController {
         return "redirect:/customers";
     }
 
-    // Show customer todos
     @GetMapping("/customers/{id}/todos")
     public String customerTodos(@PathVariable Long id,
                                 @RequestParam(required = false, defaultValue = "all") String status,
                                 Model model,
                                 HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
@@ -214,12 +313,14 @@ public class HomeController {
         return "customer-todos";
     }
 
-    // Add a new todo / follow-up reminder
     @PostMapping("/customers/{id}/todos")
     public String addTodo(@PathVariable Long id,
                           @RequestParam String title,
                           HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
@@ -234,12 +335,14 @@ public class HomeController {
         return "redirect:/customers/" + id + "/todos";
     }
 
-    // Mark todo done / undone
     @PostMapping("/customers/{customerId}/todos/{todoId}/toggle")
     public String toggleTodo(@PathVariable Long customerId,
                              @PathVariable Long todoId,
                              HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
@@ -252,12 +355,14 @@ public class HomeController {
         return "redirect:/customers/" + customerId + "/todos";
     }
 
-    // Delete one todo
     @PostMapping("/customers/{customerId}/todos/{todoId}/delete")
     public String deleteTodo(@PathVariable Long customerId,
                              @PathVariable Long todoId,
                              HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
@@ -265,13 +370,15 @@ public class HomeController {
         return "redirect:/customers/" + customerId + "/todos";
     }
 
-    // Show policy page for one customer
     @GetMapping("/customers/{id}/policies")
     public String customerPolicies(@PathVariable Long id,
                                    @RequestParam(required = false) String error,
                                    Model model,
                                    HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
@@ -280,53 +387,92 @@ public class HomeController {
 
         List<Policy> policies = policyRepo.findByCustomerId(id);
 
+        double totalAmountOwed = policies.stream()
+                .filter(p -> !p.isPaid())
+                .mapToDouble(Policy::getAmountOwed)
+                .sum();
+
         model.addAttribute("customer", customer);
         model.addAttribute("policies", policies);
         model.addAttribute("error", error);
+        model.addAttribute("totalAmountOwed", totalAmountOwed);
 
         return "customer-policies";
     }
 
-    // Add a policy for the selected customer
     @PostMapping("/customers/{id}/policies")
     public String addPolicy(@PathVariable Long id,
                             @RequestParam String type,
+                            @RequestParam String billingType,
+                            @RequestParam double amountOwed,
+                            @RequestParam(required = false) String coverageInfo,
                             @RequestParam String startDate,
                             @RequestParam String expiryDate,
+                            @RequestParam(defaultValue = "false") boolean paid,
                             HttpSession session) {
-        if (notLoggedIn(session)) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
             return "redirect:/login";
         }
 
         Customer customer = customerRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid customer id: " + id));
 
-        // basic validation for empty fields
         if (type == null || type.trim().isEmpty()
+                || billingType == null || billingType.trim().isEmpty()
                 || startDate == null || startDate.isBlank()
                 || expiryDate == null || expiryDate.isBlank()) {
-            return "redirect:/customers/" + id + "/policies?error=Please%20fill%20all%20policy%20fields";
+            return "redirect:/customers/" + id + "/policies?error=Please%20fill%20all%20required%20policy%20fields";
+        }
+
+        if (amountOwed < 0) {
+            return "redirect:/customers/" + id + "/policies?error=Amount%20owed%20cannot%20be%20negative";
         }
 
         LocalDate start = LocalDate.parse(startDate);
         LocalDate expiry = LocalDate.parse(expiryDate);
 
-        // expiry date should not be before start date
         if (expiry.isBefore(start)) {
             return "redirect:/customers/" + id + "/policies?error=Expiry%20date%20cannot%20be%20before%20start%20date";
         }
 
-        Policy policy = new Policy(customer, type.trim(), start, expiry);
+        Policy policy = new Policy(
+                customer,
+                type.trim(),
+                billingType.trim(),
+                amountOwed,
+                coverageInfo == null ? "" : coverageInfo.trim(),
+                start,
+                expiry
+        );
 
-        // keep boolean updated too, even though display is based on dates
-        if (expiry.isBefore(LocalDate.now())) {
-            policy.setActive(false);
-        } else {
-            policy.setActive(true);
-        }
+        policy.setActive(!expiry.isBefore(LocalDate.now()));
+        policy.setPaid(paid);
 
         policyRepo.save(policy);
 
         return "redirect:/customers/" + id + "/policies";
+    }
+
+    @PostMapping("/customers/{customerId}/policies/{policyId}/toggle-payment")
+    public String togglePolicyPayment(@PathVariable Long customerId,
+                                      @PathVariable Long policyId,
+                                      HttpSession session) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
+            return "redirect:/login";
+        }
+
+        Policy policy = policyRepo.findById(policyId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid policy id: " + policyId));
+
+        policy.setPaid(!policy.isPaid());
+        policyRepo.save(policy);
+
+        return "redirect:/customers/" + customerId + "/policies";
     }
 }

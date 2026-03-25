@@ -4,73 +4,87 @@
     <title>CMS Sign Up</title>
 
     <style>
-        body{
+        body {
             font-family: Arial, sans-serif;
-            background-color:#f4f6f9;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            height:100vh;
-            margin:0;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
         }
 
-        .signup-box{
-            background:white;
-            padding:40px;
-            width:350px;
-            border-radius:8px;
-            box-shadow:0 4px 12px rgba(0,0,0,0.1);
-            text-align:center;
+        .signup-box {
+            background: white;
+            padding: 40px;
+            width: 380px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
         }
 
-        h2{
-            margin-bottom:20px;
+        h2 {
+            margin-bottom: 20px;
         }
 
-        input{
-            width:100%;
-            padding:10px;
-            margin-top:5px;
-            margin-bottom:15px;
-            border:1px solid #ccc;
-            border-radius:4px;
+        label {
+            display: block;
+            text-align: left;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
 
-        button{
-            width:100%;
-            padding:10px;
-            background:#2c7be5;
-            border:none;
-            color:white;
-            font-size:15px;
-            border-radius:4px;
-            cursor:pointer;
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
 
-        button:hover{
-            background:#1a5fd0;
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #2c7be5;
+            border: none;
+            color: white;
+            font-size: 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
         }
 
-        .error{
-            color:red;
-            margin-bottom:10px;
+        button:hover {
+            background: #1a5fd0;
         }
 
-        .login-link{
-            margin-top:15px;
+        .error {
+            color: red;
+            margin-bottom: 10px;
         }
 
-        a{
-            text-decoration:none;
-            color:#2c7be5;
+        .hint {
+            font-size: 13px;
+            color: #555;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .login-link {
+            margin-top: 15px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #2c7be5;
         }
     </style>
-
 </head>
 <body>
 
 <div class="signup-box">
-
     <h2>Create CMS Account</h2>
 
     <div th:if="${error}" class="error">
@@ -79,21 +93,39 @@
 
     <form action="/signup" method="post">
 
+        <label>First Name</label>
+        <input type="text" name="firstName" placeholder="Enter first name" required>
+
+        <label>Last Name</label>
+        <input type="text" name="lastName" placeholder="Enter last name" required>
+
         <label>Email</label>
         <input type="email" name="email" placeholder="Enter email" required>
+
+        <label>Role</label>
+        <select name="role" required>
+            <option value="">Select role</option>
+            <option value="BROKER">Broker</option>
+            <option value="MANAGER">Manager</option>
+        </select>
 
         <label>Password</label>
         <input type="password" name="password" placeholder="Create password" required>
 
-        <button type="submit">Create Account</button>
+        <label>Confirm Password</label>
+        <input type="password" name="confirmPassword" placeholder="Confirm password" required>
 
+        <div class="hint">
+            Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.
+        </div>
+
+        <button type="submit">Create Account</button>
     </form>
 
     <div class="login-link">
         <p>Already have an account?</p>
         <a href="/login">Back to Login</a>
     </div>
-
 </div>
 
 </body>

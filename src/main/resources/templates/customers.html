@@ -10,7 +10,6 @@
 
 <div class="app-shell">
 
-    <!-- Sidebar -->
     <aside class="sidebar">
 
         <div class="brand">
@@ -20,16 +19,14 @@
 
         <div class="sidebar-section-title">Navigation</div>
 
-        <!-- FIXED LINKS -->
         <a th:href="@{/}" class="nav-link">Dashboard</a>
         <a th:href="@{/customers}" class="nav-link active">Customers</a>
+        <a th:href="@{/agents}" class="nav-link">Agents</a>
 
     </aside>
 
-    <!-- Main Content -->
     <div class="main-area">
 
-        <!-- Topbar -->
         <div class="topbar">
             <div>
                 <div class="topbar-title">Customers</div>
@@ -54,12 +51,11 @@
                     </a>
                 </div>
 
-                <!-- Search -->
                 <form method="get" th:action="@{/customers}" class="search-bar">
 
                     <input type="text"
                            name="query"
-                           placeholder="Search by first name"
+                           placeholder="Search by account number, first name, last name, or email"
                            th:value="${query}">
 
                     <button type="submit" class="btn">
@@ -72,11 +68,9 @@
 
                 </form>
 
-                <!-- Customer Table -->
                 <div class="table-card">
 
                     <table>
-
                         <tr>
                             <th>ID</th>
                             <th>Account</th>
@@ -87,40 +81,29 @@
                         </tr>
 
                         <tr th:each="customer : ${customers}">
-
                             <td th:text="${customer.id}"></td>
-
                             <td th:text="${customer.accountNumber}"></td>
-
                             <td th:text="${customer.fullName}"></td>
-
                             <td th:text="${customer.email}"></td>
 
                             <td>
-
-                                <!-- If agent exists -->
-                                <span th:if="${customer.assignedAgent != null and !customer.assignedAgent.isEmpty()}"
+                                <span th:if="${customer.assignedAgent != null}"
                                       class="badge badge-success"
-                                      th:text="${customer.assignedAgent}">
+                                      th:text="${customer.assignedAgent.fullName}">
                                 </span>
 
-                                <!-- If no agent -->
-                                <span th:if="${customer.assignedAgent == null or customer.assignedAgent.isEmpty()}"
+                                <span th:if="${customer.assignedAgent == null}"
                                       class="badge badge-neutral">
                                     Not assigned
                                 </span>
-
                             </td>
 
                             <td>
-
                                 <a class="table-link"
                                    th:href="@{/customers/{id}(id=${customer.id})}">
                                     View Profile
                                 </a>
-
                             </td>
-
                         </tr>
 
                     </table>
@@ -128,7 +111,7 @@
                 </div>
 
                 <p th:if="${#lists.isEmpty(customers)}" class="empty-message">
-                    No customers found.
+                    No customers found matching your search.
                 </p>
 
             </div>

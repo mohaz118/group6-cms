@@ -10,7 +10,6 @@
 
 <div class="app-shell">
 
-    <!-- Sidebar -->
     <aside class="sidebar">
 
         <div class="brand">
@@ -22,17 +21,17 @@
 
         <a th:href="@{/}" class="nav-link active">Dashboard</a>
         <a th:href="@{/customers}" class="nav-link">Customers</a>
+        <a th:href="@{/agents}" class="nav-link">Agents</a>
 
     </aside>
 
-    <!-- Main content -->
     <div class="main-area">
 
         <div class="topbar" style="display:flex; justify-content:space-between; align-items:center;">
             <div>
                 <div class="topbar-title">Dashboard</div>
                 <div class="topbar-subtitle">
-                    Overview of your brokerage system
+                    Overview of your brokerage system and current activity
                 </div>
             </div>
 
@@ -41,7 +40,11 @@
 
         <main class="page-content">
 
-            <!-- Statistics cards -->
+            <p class="summary-note">
+                Monitor customer activity, policy health, outstanding balances, and pending work in one place.
+            </p>
+
+            <!-- Top stats -->
             <div class="info-grid">
 
                 <div class="card">
@@ -60,29 +63,149 @@
                 </div>
 
                 <div class="card">
-                    <div class="info-label">Agents Assigned</div>
+                    <div class="info-label">Assigned Agents</div>
                     <div class="info-value" th:text="${agentCount}">0</div>
                 </div>
 
             </div>
 
-            <!-- Quick links -->
+            <!-- Policy summary -->
+            <div class="info-grid">
+
+                <div class="card money-card">
+                    <div class="info-label">Total Amount Owed</div>
+                    <div class="info-value money-value"
+                         th:text="'$' + ${#numbers.formatDecimal(totalAmountOwed, 1, 'COMMA', 2, 'POINT')}">
+                        $0.00
+                    </div>
+                </div>
+
+                <div class="card highlight-card">
+                    <div class="info-label">Policies Expiring Soon</div>
+                    <div class="info-value" th:text="${expiringSoonCount}">0</div>
+                </div>
+
+                <div class="card">
+                    <div class="info-label">Active Policies</div>
+                    <div class="info-value" th:text="${activePolicyCount}">0</div>
+                </div>
+
+                <div class="card">
+                    <div class="info-label">Expired Policies</div>
+                    <div class="info-value" th:text="${expiredPolicyCount}">0</div>
+                </div>
+
+            </div>
+
+            <!-- Recent customers -->
             <div class="card">
 
                 <div class="page-header">
-                    <h2>Quick Actions</h2>
+                    <div>
+                        <h2>Recent Customers</h2>
+                        <p>Latest customer accounts added to the system</p>
+                    </div>
+                </div>
+
+                <p th:if="${#lists.isEmpty(recentCustomers)}" class="empty-message">
+                    No customer records available yet.
+                </p>
+
+                <div class="table-card" th:if="${!#lists.isEmpty(recentCustomers)}">
+                    <table>
+                        <tr>
+                            <th>Account</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Assigned Agent</th>
+                            <th>Action</th>
+                        </tr>
+
+                        <tr th:each="customer : ${recentCustomers}">
+                            <td th:text="${customer.accountNumber}"></td>
+                            <td th:text="${customer.fullName}"></td>
+                            <td th:text="${customer.email}"></td>
+
+                            <td>
+                                <span th:if="${customer.assignedAgent != null}"
+                                      class="badge badge-success"
+                                      th:text="${customer.assignedAgent.fullName}">
+                                </span>
+
+                                <span th:if="${customer.assignedAgent == null}"
+                                      class="badge badge-neutral">
+                                    Not assigned
+                                </span>
+                            </td>
+
+                            <td>
+                                <a class="table-link"
+                                   th:href="@{/customers/{id}(id=${customer.id})}">
+                                    View Profile
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- Upcoming to-dos -->
+            <div class="card">
+
+                <div class="page-header">
+                    <div>
+                        <h2>Upcoming To-Dos</h2>
+                        <p>Pending customer tasks that still need attention</p>
+                    </div>
+                </div>
+
+                <p th:if="${#lists.isEmpty(upcomingTodos)}" class="empty-message">
+                    No open to-dos at the moment.
+                </p>
+
+                <div class="table-card" th:if="${!#lists.isEmpty(upcomingTodos)}">
+                    <table>
+                        <tr>
+                            <th>Task</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+
+                        <tr th:each="todo : ${upcomingTodos}">
+                            <td th:text="${todo.title}"></td>
+                            <td th:text="${todo.customer.fullName}"></td>
+                            <td>
+                                <span class="badge badge-warning">Open</span>
+                            </td>
+                            <td>
+                                <a class="table-link"
+                                   th:href="@{/customers/{id}/todos(id=${todo.customer.id})}">
+                                    View To-Dos
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- Quick actions -->
+            <div class="card">
+
+                <div class="page-header">
+                    <div>
+                        <h2>Quick Actions</h2>
+                        <p>Common actions used by brokerage staff</p>
+                    </div>
                 </div>
 
                 <div class="action-row">
-
-                    <a th:href="@{/customers/new}" class="btn">
-                        Add Customer
-                    </a>
-
-                    <a th:href="@{/customers}" class="btn btn-secondary">
-                        View Customers
-                    </a>
-
+                    <a th:href="@{/customers/new}" class="btn">Add Customer</a>
+                    <a th:href="@{/customers}" class="btn btn-secondary">View Customers</a>
+                    <a th:href="@{/agents/new}" class="btn btn-secondary">Add Agent</a>
+                    <a th:href="@{/agents}" class="btn btn-secondary">View Agents</a>
                 </div>
 
             </div>

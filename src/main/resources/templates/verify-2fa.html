@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Verify 2FA</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .verify-box {
+            background: white;
+            padding: 40px;
+            width: 380px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #2c7be5;
+            border: none;
+            color: white;
+            font-size: 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1a5fd0;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+
+        .hint {
+            font-size: 13px;
+            color: #666;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="verify-box">
+    <h2>Two-Factor Verification</h2>
+    <p>Enter the 6-digit verification code to continue.</p>
+
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <form action="/verify-2fa" method="post">
+        <label>Verification Code</label>
+        <input type="text" name="code" placeholder="Enter 6-digit code" required>
+
+        <button type="submit">Verify Code</button>
+    </form>
+
+    <div class="hint">
+        For this project demo, the verification code is printed in the terminal.
+    </div>
+</div>
+
+</body>
+</html>

@@ -16,17 +16,26 @@ public class Customer {
     private String lastName;
     private String email;
 
-    // simple field for Sprint 2 assign agent feature
-    private String assignedAgent;
+    private String phone;
+    private String address; // mailing address
+    private String billingAddress;
 
-    public Customer() {}
+    @ManyToOne
+    @JoinColumn(name = "agent_id")
+    private Agent assignedAgent;
+
+    public Customer() {
+    }
 
     public Customer(String accountNumber, String firstName, String lastName, String email) {
         this.accountNumber = accountNumber;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.assignedAgent = "";
+        this.phone = "";
+        this.address = "";
+        this.billingAddress = "";
+        this.assignedAgent = null;
     }
 
     public Long getId() {
@@ -65,11 +74,35 @@ public class Customer {
         this.email = email;
     }
 
-    public String getAssignedAgent() {
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getBillingAddress() {
+        return billingAddress;
+    }
+
+    public void setBillingAddress(String billingAddress) {
+        this.billingAddress = billingAddress;
+    }
+
+    public Agent getAssignedAgent() {
         return assignedAgent;
     }
 
-    public void setAssignedAgent(String assignedAgent) {
+    public void setAssignedAgent(Agent assignedAgent) {
         this.assignedAgent = assignedAgent;
     }
 
