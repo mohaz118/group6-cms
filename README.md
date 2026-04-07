@@ -44,11 +44,13 @@ The system allows efficient tracking of customer activity, policy details, and p
 
 ## Test Account
 
-If no account exists, create one using the signup page.
+No default account is provided.
 
-Example credentials:
-- Email: admin@gmail.com  
-- Password: admin123  
+Please create an account using the signup page.
+
+Example (you can create this account):
+- Email: admin@gmail.com
+- Password: Admin@123 
 
 ---
 
