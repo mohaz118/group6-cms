@@ -63,6 +63,4 @@ Example credentials:
 ## Submission Info
 - GitHub Repository: https://github.com/mohaz118/group6-cms
 
-## How to Run
 
-1. Clone the repository:
