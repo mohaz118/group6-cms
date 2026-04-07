@@ -41,7 +41,7 @@
                 <div class="page-header">
                     <div>
                         <h2>Add New Customer</h2>
-                        <p>Create a customer record with contact and billing details.</p>
+                        <p>Create a customer record with contact, billing, and consent details.</p>
                     </div>
                 </div>
 
@@ -106,6 +106,25 @@
                                    class="form-input"
                                    placeholder="Enter billing address">
                             <small>If checked above, this will auto-fill from the mailing address.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="display:flex; align-items:center; gap:10px; font-weight:600;">
+                                <input type="checkbox" name="caslConsent" value="true" style="width:auto;">
+                                CASL Consent Given
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="display:flex; align-items:center; gap:10px; font-weight:600;">
+                                <input type="checkbox" name="creditCheckConsent" value="true" style="width:auto;">
+                                Credit Check Consent Given
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Consent Date</label>
+                            <input type="date" name="consentDate" class="form-input">
                         </div>
 
                     </div>

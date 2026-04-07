@@ -131,6 +131,64 @@
                         </div>
                     </div>
 
+                    <div class="info-box">
+                        <div class="info-label">CASL Consent</div>
+                        <div class="info-value">
+                            <span th:if="${customer.caslConsent}" class="badge badge-success">Yes</span>
+                            <span th:if="${!customer.caslConsent}" class="badge badge-danger">No</span>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-label">Credit Check Consent</div>
+                        <div class="info-value">
+                            <span th:if="${customer.creditCheckConsent}" class="badge badge-success">Yes</span>
+                            <span th:if="${!customer.creditCheckConsent}" class="badge badge-danger">No</span>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-label">Consent Date</div>
+                        <div class="info-value"
+                             th:text="${customer.consentDate != null ? customer.consentDate : 'Not provided'}">
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="page-header">
+                        <div>
+                            <h2>Notes</h2>
+                            <p>Add internal notes for this customer account.</p>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/customers/{id}/notes(id=${customer.id})}" method="post">
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label>Add Note</label>
+                            <textarea class="form-input"
+                                      name="content"
+                                      rows="4"
+                                      placeholder="Enter a note about this customer..."></textarea>
+                        </div>
+                        <button type="submit" class="btn">Save Note</button>
+                    </form>
+
+                    <div style="margin-top:24px;">
+                        <p th:if="${#lists.isEmpty(notes)}" class="empty-message">
+                            No notes yet. Add a note above to get started.
+                        </p>
+
+                        <div th:if="${!#lists.isEmpty(notes)}">
+                            <div th:each="note : ${notes}" class="card" style="margin-bottom:16px;">
+                                <div style="font-size:14px; color:#6b7280; margin-bottom:8px;"
+                                     th:text="${#temporals.format(note.createdAt, 'yyyy-MM-dd HH:mm')}">
+                                </div>
+                                <div th:text="${note.content}" style="white-space: pre-wrap;"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="action-row" style="margin-top: 24px;">

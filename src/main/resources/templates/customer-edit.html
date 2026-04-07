@@ -127,6 +127,36 @@
                         </div>
 
                         <div class="form-group">
+                            <label style="display:flex; align-items:center; gap:10px; font-weight:600;">
+                                <input type="checkbox"
+                                       name="caslConsent"
+                                       value="true"
+                                       style="width:auto;"
+                                       th:checked="${customer.caslConsent}">
+                                CASL Consent Given
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="display:flex; align-items:center; gap:10px; font-weight:600;">
+                                <input type="checkbox"
+                                       name="creditCheckConsent"
+                                       value="true"
+                                       style="width:auto;"
+                                       th:checked="${customer.creditCheckConsent}">
+                                Credit Check Consent Given
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Consent Date</label>
+                            <input class="form-input"
+                                   type="date"
+                                   name="consentDate"
+                                   th:value="${customer.consentDate}">
+                        </div>
+
+                        <div class="form-group">
                             <label>Assigned Agent</label>
                             <select class="form-input" name="assignedAgentId">
                                 <option value="">Not assigned</option>

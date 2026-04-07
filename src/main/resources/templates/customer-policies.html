@@ -61,7 +61,7 @@
 
                         <div class="form-group">
                             <label>Policy Type</label>
-                            <select class="form-input" name="type" required>
+                            <select class="form-input" name="type" id="policyType" required>
                                 <option value="">Select policy type</option>
                                 <option value="Auto">Auto</option>
                                 <option value="Home">Home</option>
@@ -118,6 +118,67 @@
                                       placeholder="Example: $1M liability, $1,000 deductible, collision included"></textarea>
                         </div>
 
+                        <div id="autoFields" style="display:none; grid-column: 1 / -1;">
+                            <div class="card" style="margin-top:12px;">
+                                <h3 style="margin-bottom:16px;">Auto Policy Details</h3>
+
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Vehicle Type</label>
+                                        <input class="form-input" type="text" name="vehicleType" placeholder="Car, SUV, Truck">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Vehicle Year</label>
+                                        <input class="form-input" type="text" name="vehicleYear" placeholder="2022">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Make</label>
+                                        <input class="form-input" type="text" name="vehicleMake" placeholder="Toyota">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Model</label>
+                                        <input class="form-input" type="text" name="vehicleModel" placeholder="Corolla">
+                                    </div>
+
+                                    <div class="form-group" style="grid-column: 1 / -1;">
+                                        <label>VIN</label>
+                                        <input class="form-input" type="text" name="vin" placeholder="Vehicle Identification Number">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="propertyFields" style="display:none; grid-column: 1 / -1;">
+                            <div class="card" style="margin-top:12px;">
+                                <h3 style="margin-bottom:16px;">Property Policy Details</h3>
+
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Dwelling Type</label>
+                                        <input class="form-input" type="text" name="dwellingType" placeholder="Detached, Condo Unit, Apartment">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Occupancy Type</label>
+                                        <input class="form-input" type="text" name="occupancyType" placeholder="Owner Occupied, Tenant Occupied">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Construction Year</label>
+                                        <input class="form-input" type="text" name="constructionYear" placeholder="2008">
+                                    </div>
+
+                                    <div class="form-group" style="grid-column: 1 / -1;">
+                                        <label>Property Address</label>
+                                        <input class="form-input" type="text" name="propertyAddress" placeholder="123 King St W, Waterloo, ON">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <br>
@@ -158,7 +219,9 @@
                             <th>Billing</th>
                             <th>Amount Owed</th>
                             <th>Payment</th>
+                            <th>Details</th>
                             <th>Coverage Info</th>
+                            <th>Co-Insured</th>
                             <th>Start Date</th>
                             <th>Expiry Date</th>
                             <th>Status</th>
@@ -174,23 +237,68 @@
                             <td th:text="'$' + ${#numbers.formatDecimal(p.amountOwed, 1, 'COMMA', 2, 'POINT')}"></td>
 
                             <td>
-                                <span th:if="${p.paid}" class="badge badge-success">
-                                    Paid
-                                </span>
+                                <span th:if="${p.paid}" class="badge badge-success">Paid</span>
+                                <span th:if="${!p.paid}" class="badge badge-danger">Unpaid</span>
+                            </td>
 
-                                <span th:if="${!p.paid}" class="badge badge-danger">
-                                    Unpaid
-                                </span>
+                            <td style="min-width:220px;">
+                                <div th:if="${p.type == 'Auto'}">
+                                    <div><strong>Vehicle:</strong> <span th:text="${p.vehicleType != null and !p.vehicleType.isEmpty() ? p.vehicleType : 'Not provided'}"></span></div>
+                                    <div><strong>Year:</strong> <span th:text="${p.vehicleYear != null and !p.vehicleYear.isEmpty() ? p.vehicleYear : 'Not provided'}"></span></div>
+                                    <div><strong>Make:</strong> <span th:text="${p.vehicleMake != null and !p.vehicleMake.isEmpty() ? p.vehicleMake : 'Not provided'}"></span></div>
+                                    <div><strong>Model:</strong> <span th:text="${p.vehicleModel != null and !p.vehicleModel.isEmpty() ? p.vehicleModel : 'Not provided'}"></span></div>
+                                    <div><strong>VIN:</strong> <span th:text="${p.vin != null and !p.vin.isEmpty() ? p.vin : 'Not provided'}"></span></div>
+                                </div>
+
+                                <div th:if="${p.type == 'Home' or p.type == 'Tenant' or p.type == 'Condo'}">
+                                    <div><strong>Dwelling:</strong> <span th:text="${p.dwellingType != null and !p.dwellingType.isEmpty() ? p.dwellingType : 'Not provided'}"></span></div>
+                                    <div><strong>Occupancy:</strong> <span th:text="${p.occupancyType != null and !p.occupancyType.isEmpty() ? p.occupancyType : 'Not provided'}"></span></div>
+                                    <div><strong>Year:</strong> <span th:text="${p.constructionYear != null and !p.constructionYear.isEmpty() ? p.constructionYear : 'Not provided'}"></span></div>
+                                    <div><strong>Address:</strong> <span th:text="${p.propertyAddress != null and !p.propertyAddress.isEmpty() ? p.propertyAddress : 'Not provided'}"></span></div>
+                                </div>
+
+                                <div th:if="${p.type != 'Auto' and p.type != 'Home' and p.type != 'Tenant' and p.type != 'Condo'}">
+                                    Standard policy details
+                                </div>
                             </td>
 
                             <td>
                                 <span th:if="${p.coverageInfo != null and !p.coverageInfo.isEmpty()}"
                                       th:text="${p.coverageInfo}"></span>
-
                                 <span th:if="${p.coverageInfo == null or p.coverageInfo.isEmpty()}"
                                       style="color:#888;">
                                     Not provided
                                 </span>
+                            </td>
+
+                            <td style="min-width:240px;">
+                                <form th:action="@{/customers/{customerId}/policies/{policyId}/coinsured(customerId=${customer.id}, policyId=${p.id})}"
+                                      method="post"
+                                      style="margin-bottom:12px;">
+                                    <input class="form-input"
+                                           type="text"
+                                           name="fullName"
+                                           placeholder="Co-insured full name"
+                                           style="margin-bottom:8px;"
+                                           required>
+                                    <input class="form-input"
+                                           type="text"
+                                           name="relationship"
+                                           placeholder="Relationship (e.g. Spouse)">
+                                    <button type="submit" class="btn" style="margin-top:8px;">Add Co-Insured</button>
+                                </form>
+
+                                <div th:if="${coInsuredMap[p.id] != null and !#lists.isEmpty(coInsuredMap[p.id])}">
+                                    <div th:each="c : ${coInsuredMap[p.id]}" style="margin-bottom:8px;">
+                                        <strong th:text="${c.fullName}"></strong>
+                                        <span th:text="${c.relationship != null and !c.relationship.isEmpty() ? ' - ' + c.relationship : ''}"></span>
+                                    </div>
+                                </div>
+
+                                <div th:if="${coInsuredMap[p.id] == null or #lists.isEmpty(coInsuredMap[p.id])}"
+                                     style="color:#888;">
+                                    None added
+                                </div>
                             </td>
 
                             <td th:text="${p.startDate}"></td>
@@ -202,8 +310,7 @@
                                     Expired
                                 </span>
 
-                                <span th:if="${!p.expiryDate.isBefore(T(java.time.LocalDate).now()) 
-                                    and !p.expiryDate.isAfter(T(java.time.LocalDate).now().plusDays(30))}"
+                                <span th:if="${!p.expiryDate.isBefore(T(java.time.LocalDate).now()) and !p.expiryDate.isAfter(T(java.time.LocalDate).now().plusDays(30))}"
                                       class="badge badge-warning">
                                     Expiring Soon
                                 </span>
@@ -238,6 +345,30 @@
     </div>
 
 </div>
+
+<script>
+    const policyTypeSelect = document.getElementById("policyType");
+    const autoFields = document.getElementById("autoFields");
+    const propertyFields = document.getElementById("propertyFields");
+
+    function togglePolicySpecificFields() {
+        const type = policyTypeSelect.value;
+
+        if (type === "Auto") {
+            autoFields.style.display = "block";
+            propertyFields.style.display = "none";
+        } else if (type === "Home" || type === "Tenant" || type === "Condo") {
+            autoFields.style.display = "none";
+            propertyFields.style.display = "block";
+        } else {
+            autoFields.style.display = "none";
+            propertyFields.style.display = "none";
+        }
+    }
+
+    policyTypeSelect.addEventListener("change", togglePolicySpecificFields);
+    togglePolicySpecificFields();
+</script>
 
 </body>
 </html>

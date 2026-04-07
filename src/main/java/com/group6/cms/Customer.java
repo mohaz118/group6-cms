@@ -1,6 +1,7 @@
 package com.group6.cms;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 public class Customer {
@@ -20,6 +21,10 @@ public class Customer {
     private String address; // mailing address
     private String billingAddress;
 
+    private boolean caslConsent;
+    private boolean creditCheckConsent;
+    private LocalDate consentDate;
+
     @ManyToOne
     @JoinColumn(name = "agent_id")
     private Agent assignedAgent;
@@ -35,6 +40,9 @@ public class Customer {
         this.phone = "";
         this.address = "";
         this.billingAddress = "";
+        this.caslConsent = false;
+        this.creditCheckConsent = false;
+        this.consentDate = null;
         this.assignedAgent = null;
     }
 
@@ -96,6 +104,30 @@ public class Customer {
 
     public void setBillingAddress(String billingAddress) {
         this.billingAddress = billingAddress;
+    }
+
+    public boolean isCaslConsent() {
+        return caslConsent;
+    }
+
+    public void setCaslConsent(boolean caslConsent) {
+        this.caslConsent = caslConsent;
+    }
+
+    public boolean isCreditCheckConsent() {
+        return creditCheckConsent;
+    }
+
+    public void setCreditCheckConsent(boolean creditCheckConsent) {
+        this.creditCheckConsent = creditCheckConsent;
+    }
+
+    public LocalDate getConsentDate() {
+        return consentDate;
+    }
+
+    public void setConsentDate(LocalDate consentDate) {
+        this.consentDate = consentDate;
     }
 
     public Agent getAssignedAgent() {

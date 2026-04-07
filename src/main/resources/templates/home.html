@@ -47,22 +47,22 @@
             <!-- Top stats -->
             <div class="info-grid">
 
-                <div class="card">
+                <div class="info-box blue">
                     <div class="info-label">Total Customers</div>
                     <div class="info-value" th:text="${customerCount}">0</div>
                 </div>
 
-                <div class="card">
+                <div class="info-box purple">
                     <div class="info-label">Total Policies</div>
                     <div class="info-value" th:text="${policyCount}">0</div>
                 </div>
 
-                <div class="card">
+                <div class="info-box orange">
                     <div class="info-label">Open To-Dos</div>
                     <div class="info-value" th:text="${todoCount}">0</div>
                 </div>
 
-                <div class="card">
+                <div class="info-box green">
                     <div class="info-label">Assigned Agents</div>
                     <div class="info-value" th:text="${agentCount}">0</div>
                 </div>
@@ -72,7 +72,7 @@
             <!-- Policy summary -->
             <div class="info-grid">
 
-                <div class="card money-card">
+                <div class="info-box red">
                     <div class="info-label">Total Amount Owed</div>
                     <div class="info-value money-value"
                          th:text="'$' + ${#numbers.formatDecimal(totalAmountOwed, 1, 'COMMA', 2, 'POINT')}">
@@ -80,17 +80,17 @@
                     </div>
                 </div>
 
-                <div class="card highlight-card">
+                <div class="info-box orange">
                     <div class="info-label">Policies Expiring Soon</div>
                     <div class="info-value" th:text="${expiringSoonCount}">0</div>
                 </div>
 
-                <div class="card">
+                <div class="info-box green">
                     <div class="info-label">Active Policies</div>
                     <div class="info-value" th:text="${activePolicyCount}">0</div>
                 </div>
 
-                <div class="card">
+                <div class="info-box neutral">
                     <div class="info-label">Expired Policies</div>
                     <div class="info-value" th:text="${expiredPolicyCount}">0</div>
                 </div>

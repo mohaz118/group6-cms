@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class HomeController {
@@ -16,15 +18,21 @@ public class HomeController {
     private final TodoRepository todoRepo;
     private final PolicyRepository policyRepo;
     private final AgentRepository agentRepo;
+    private final NoteRepository noteRepo;
+    private final CoInsuredRepository coInsuredRepo;
 
     public HomeController(CustomerRepository customerRepo,
                           TodoRepository todoRepo,
                           PolicyRepository policyRepo,
-                          AgentRepository agentRepo) {
+                          AgentRepository agentRepo,
+                          NoteRepository noteRepo,
+                          CoInsuredRepository coInsuredRepo) {
         this.customerRepo = customerRepo;
         this.todoRepo = todoRepo;
         this.policyRepo = policyRepo;
         this.agentRepo = agentRepo;
+        this.noteRepo = noteRepo;
+        this.coInsuredRepo = coInsuredRepo;
     }
 
     private boolean notFullyAuthenticated(HttpSession session) {
@@ -141,14 +149,19 @@ public class HomeController {
     }
 
     @PostMapping("/customers/new")
-    public String createCustomer(@RequestParam String accountNumber,
-                                 @RequestParam String firstName,
-                                 @RequestParam String lastName,
-                                 @RequestParam String email,
-                                 @RequestParam(required = false) String phone,
-                                 @RequestParam(required = false) String address,
-                                 @RequestParam(required = false) String billingAddress,
-                                 HttpSession session) {
+    public String createCustomer(
+            @RequestParam String accountNumber,
+            @RequestParam String firstName,
+            @RequestParam String lastName,
+            @RequestParam String email,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String billingAddress,
+            @RequestParam(required = false) String caslConsent,
+            @RequestParam(required = false) String creditCheckConsent,
+            @RequestParam(required = false) String consentDate,
+            HttpSession session) {
+
         if (notFullyAuthenticated(session)) {
             if (session.getAttribute("loggedInUser") != null) {
                 return "redirect:/verify-2fa";
@@ -170,6 +183,13 @@ public class HomeController {
         customer.setPhone(phone == null ? "" : phone.trim());
         customer.setAddress(address == null ? "" : address.trim());
         customer.setBillingAddress(billingAddress == null ? "" : billingAddress.trim());
+        customer.setCaslConsent(caslConsent != null);
+        customer.setCreditCheckConsent(creditCheckConsent != null);
+
+        if (consentDate != null && !consentDate.isBlank()) {
+            customer.setConsentDate(LocalDate.parse(consentDate));
+        }
+
         customer.setAssignedAgent(null);
 
         customerRepo.save(customer);
@@ -191,6 +211,7 @@ public class HomeController {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid customer id: " + id));
 
         List<Policy> policies = policyRepo.findByCustomerId(id);
+        List<Note> notes = noteRepo.findByCustomerIdOrderByCreatedAtDesc(id);
 
         double totalAmountOwed = policies.stream()
                 .filter(p -> !p.isPaid())
@@ -199,6 +220,7 @@ public class HomeController {
 
         model.addAttribute("customer", customer);
         model.addAttribute("totalAmountOwed", totalAmountOwed);
+        model.addAttribute("notes", notes);
 
         return "customer-profile";
     }
@@ -225,16 +247,21 @@ public class HomeController {
     }
 
     @PostMapping("/customers/{id}/edit")
-    public String updateCustomer(@PathVariable Long id,
-                                 @RequestParam String accountNumber,
-                                 @RequestParam String firstName,
-                                 @RequestParam String lastName,
-                                 @RequestParam String email,
-                                 @RequestParam(required = false) String phone,
-                                 @RequestParam(required = false) String address,
-                                 @RequestParam(required = false) String billingAddress,
-                                 @RequestParam(required = false) Long assignedAgentId,
-                                 HttpSession session) {
+    public String updateCustomer(
+            @PathVariable Long id,
+            @RequestParam String accountNumber,
+            @RequestParam String firstName,
+            @RequestParam String lastName,
+            @RequestParam String email,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String billingAddress,
+            @RequestParam(required = false) Long assignedAgentId,
+            @RequestParam(required = false) String caslConsent,
+            @RequestParam(required = false) String creditCheckConsent,
+            @RequestParam(required = false) String consentDate,
+            HttpSession session) {
+
         if (notFullyAuthenticated(session)) {
             if (session.getAttribute("loggedInUser") != null) {
                 return "redirect:/verify-2fa";
@@ -256,6 +283,12 @@ public class HomeController {
         customer.setPhone(phone == null ? "" : phone.trim());
         customer.setAddress(address == null ? "" : address.trim());
         customer.setBillingAddress(billingAddress == null ? "" : billingAddress.trim());
+        customer.setCaslConsent(caslConsent != null);
+        customer.setCreditCheckConsent(creditCheckConsent != null);
+
+        if (consentDate != null && !consentDate.isBlank()) {
+            customer.setConsentDate(LocalDate.parse(consentDate));
+        }
 
         if (assignedAgentId != null) {
             Agent agent = agentRepo.findById(assignedAgentId).orElse(null);
@@ -278,7 +311,14 @@ public class HomeController {
             return "redirect:/login";
         }
 
+        noteRepo.deleteByCustomerId(id);
         todoRepo.deleteByCustomerId(id);
+
+        List<Policy> policies = policyRepo.findByCustomerId(id);
+        for (Policy policy : policies) {
+            coInsuredRepo.deleteByPolicyId(policy.getId());
+        }
+
         customerRepo.deleteById(id);
         return "redirect:/customers";
     }
@@ -392,10 +432,16 @@ public class HomeController {
                 .mapToDouble(Policy::getAmountOwed)
                 .sum();
 
+        Map<Long, List<CoInsured>> coInsuredMap = new HashMap<>();
+        for (Policy policy : policies) {
+            coInsuredMap.put(policy.getId(), coInsuredRepo.findByPolicyId(policy.getId()));
+        }
+
         model.addAttribute("customer", customer);
         model.addAttribute("policies", policies);
         model.addAttribute("error", error);
         model.addAttribute("totalAmountOwed", totalAmountOwed);
+        model.addAttribute("coInsuredMap", coInsuredMap);
 
         return "customer-policies";
     }
@@ -409,6 +455,15 @@ public class HomeController {
                             @RequestParam String startDate,
                             @RequestParam String expiryDate,
                             @RequestParam(defaultValue = "false") boolean paid,
+                            @RequestParam(required = false) String vehicleType,
+                            @RequestParam(required = false) String vehicleYear,
+                            @RequestParam(required = false) String vehicleMake,
+                            @RequestParam(required = false) String vehicleModel,
+                            @RequestParam(required = false) String vin,
+                            @RequestParam(required = false) String dwellingType,
+                            @RequestParam(required = false) String propertyAddress,
+                            @RequestParam(required = false) String occupancyType,
+                            @RequestParam(required = false) String constructionYear,
                             HttpSession session) {
         if (notFullyAuthenticated(session)) {
             if (session.getAttribute("loggedInUser") != null) {
@@ -451,9 +506,73 @@ public class HomeController {
         policy.setActive(!expiry.isBefore(LocalDate.now()));
         policy.setPaid(paid);
 
+        policy.setVehicleType(vehicleType == null ? "" : vehicleType.trim());
+        policy.setVehicleYear(vehicleYear == null ? "" : vehicleYear.trim());
+        policy.setVehicleMake(vehicleMake == null ? "" : vehicleMake.trim());
+        policy.setVehicleModel(vehicleModel == null ? "" : vehicleModel.trim());
+        policy.setVin(vin == null ? "" : vin.trim());
+
+        policy.setDwellingType(dwellingType == null ? "" : dwellingType.trim());
+        policy.setPropertyAddress(propertyAddress == null ? "" : propertyAddress.trim());
+        policy.setOccupancyType(occupancyType == null ? "" : occupancyType.trim());
+        policy.setConstructionYear(constructionYear == null ? "" : constructionYear.trim());
+
         policyRepo.save(policy);
 
         return "redirect:/customers/" + id + "/policies";
+    }
+
+    @PostMapping("/customers/{customerId}/policies/{policyId}/coinsured")
+    public String addCoInsured(@PathVariable Long customerId,
+                               @PathVariable Long policyId,
+                               @RequestParam String fullName,
+                               @RequestParam(required = false) String relationship,
+                               HttpSession session) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
+            return "redirect:/login";
+        }
+
+        if (fullName == null || fullName.trim().isEmpty()) {
+            return "redirect:/customers/" + customerId + "/policies";
+        }
+
+        Policy policy = policyRepo.findById(policyId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid policy id: " + policyId));
+
+        CoInsured coInsured = new CoInsured(
+                policy,
+                fullName.trim(),
+                relationship == null ? "" : relationship.trim()
+        );
+
+        coInsuredRepo.save(coInsured);
+
+        return "redirect:/customers/" + customerId + "/policies";
+    }
+
+    @PostMapping("/customers/{id}/notes")
+    public String addNote(@PathVariable Long id,
+                          @RequestParam String content,
+                          HttpSession session) {
+        if (notFullyAuthenticated(session)) {
+            if (session.getAttribute("loggedInUser") != null) {
+                return "redirect:/verify-2fa";
+            }
+            return "redirect:/login";
+        }
+
+        Customer customer = customerRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid customer id: " + id));
+
+        if (content == null || content.trim().isEmpty()) {
+            return "redirect:/customers/" + id;
+        }
+
+        noteRepo.save(new Note(customer, content.trim()));
+        return "redirect:/customers/" + id;
     }
 
     @PostMapping("/customers/{customerId}/policies/{policyId}/toggle-payment")
